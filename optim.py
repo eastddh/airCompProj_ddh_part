@@ -464,7 +464,7 @@ class FullyConnectedNet(object):
             self.bn_params = []
             self.bn_params = [{'mode': 'train'} for i in range(self.num_layers - 1)]
         else:
-            print('Loading model weight')
+            #print('Loading model weight')
             for i in range(self.num_layers):
                 self.params['W'+str(i+1)] = load_weights['W'+str(i+1)]
                 self.params['b'+str(i+1)] = load_weights['b'+str(i+1)]

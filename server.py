@@ -6,7 +6,7 @@ import sys
 import os
 
 if len(sys.argv) != 5:
-    print("Error, require 0/1 + epoch+ initial lr+decay as input. e.g. python3 server.py 1 1 1e-4 0.9")
+    print("Error, require 0/1 + iteration+ initial lr+decay as input. e.g. python3 server.py 1 1 1e-4 0.9")
     sys.exit()
 
 weight_scale = 2e-2
@@ -18,7 +18,8 @@ epoch = int(sys.argv[2])
 lr = float(sys.argv[3])
 decay = float(sys.argv[4])
 lr = lr* (decay** (epoch-1))
-print("Epoch ", epoch," with lr ", lr)
+if epoch % 10 ==0:
+    print("Iteration ", epoch," with lr ", lr)
 # initial gradient
 if ini == 1:
     bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale)
@@ -55,7 +56,7 @@ else:
     #    load_bn[i]['running_var'] = pickle.load(f)
     f.close()
     bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
-    print("Server finished Loading model weights")
+    #print("Server finished Loading model weights")
 
     #########################################
     ###     Server reads aggregated       ###
@@ -90,7 +91,7 @@ else:
         next_w, next_config = optim.sgd_momentum(w, dw, config)
         bn_model.params[p] = next_w
         optim_configs[p] = next_config
-    print("Server updates the model weights")
+    #print("Server updates the model weights")
 
     f = open('weights\weight_bin.bin','wb')
     for para in bn_model.params:
@@ -100,7 +101,7 @@ else:
     #    pickle.dump(para['running_mean'],f)
     #    pickle.dump(para['running_var'],f)
     f.close()
-    print('Server stores the model weight')
+    #print('Server stores the model weight')
 
 
 

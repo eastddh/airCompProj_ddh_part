@@ -14,6 +14,7 @@ import optim
 import pickle
 import sys
 import os
+import numpy as np
 
 if len(sys.argv) != 3:
     print("Error, require two number input. e.g. python3 client.py 1 1")
@@ -78,10 +79,17 @@ else:
         load_bn[i]['running_mean'] = pickle.load(f)
         load_bn[i]['running_var'] = pickle.load(f)
     f.close()
-    print("client " + client+" loads the local batch layer parameters")
+    #print("client " + client+" loads the local batch layer parameters")
 bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
-print("client " + client+" loads the global model")
-trainLoss, grads = bn_model.loss(trainSet.pos, trainSet.RSSI)
+#print("client " + client+" loads the global model")
+
+num_train = trainSet.pos.shape[0]
+batch_size = int (num_train / 10)
+batch_mask = np.random.choice(num_train, batch_size)
+X_batch = trainSet.pos[batch_mask]
+y_batch = trainSet.RSSI[batch_mask]
+        
+trainLoss, grads = bn_model.loss(X_batch, y_batch)
 f = open('weights\weight_bin'+client+'.bin','wb')
 for para in bn_model.params:
     pickle.dump(bn_model.params[para], f)
@@ -89,13 +97,13 @@ for para in bn_model.bn_params:
     pickle.dump(para['running_mean'],f)
     pickle.dump(para['running_var'],f)
 f.close()
-print('client ' + client+' stores the model weight')
+#print('client ' + client+' stores the model weight')
 
 f = open('gradients\grads_bin'+client+'.bin','wb')
 for grad in grads:
     pickle.dump(grads[grad], f)
 f.close()
-print('client ' + client+' obtains and stores full gradient')
+#print('client ' + client+' obtains and stores full gradient')
 
 f = open('history\clientTrainMSELoss'+client+'.bin','ab')
 pickle.dump(trainLoss, f)
@@ -107,4 +115,4 @@ f = open('history\clientTestMSELoss'+client+'.bin','ab')
 pickle.dump(testLoss, f)
 f.close()
 
-print('client ' + client+' records the train and test MSE loss')
+#print('client ' + client+' records the train and test MSE loss')

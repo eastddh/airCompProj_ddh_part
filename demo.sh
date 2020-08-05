@@ -1,12 +1,25 @@
 #!/bin/bash
 
+echo -n "Enter number of iterations"
+read iters
 echo -n "Enter the initialized learning rate"
 read lr
 echo -n "Enter the lr decay rate"
 read decay
-for ((iter =1; iter <=100; iter++))
+echo -n "Enter number of clients"
+read numClients
+
+mkdir gradients
+mkdir history
+mkdir weights
+mkdir results
+
+for ((iter =1;iter <=$iters;iter++))
 do
-	echo "-----------------epoch $iter------------------------"
+	if ((iter % 10 ==0))
+	then
+		echo "----------------- iteration # $iter------------------------"
+	fi
 	if ((iter == 1)) 
 	then
 		python server.py 1 $iter $lr $decay
@@ -14,7 +27,6 @@ do
 		python channelAverage.py 2
 		python server.py 0 $iter $lr $decay
 	fi
-
 	for ((clients = 1; clients <=2; clients++))
 	do
 		if ((iter == 1))

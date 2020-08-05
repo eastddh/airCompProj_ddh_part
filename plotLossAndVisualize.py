@@ -43,6 +43,7 @@ def plot_visual(client, trainMse, trainNmse, testMse, testNmse, pos, pre_rss, rs
     plt.plot(testNmse)
     plt.ylabel('NMSE')
     plt.xlabel('training epoch')
+    fig.savefig('results\client'+ client+ 'loss' + '.pdf')
        
     
     fig = plt.figure(figsize = (10, 7))
@@ -55,6 +56,7 @@ def plot_visual(client, trainMse, trainNmse, testMse, testNmse, pos, pre_rss, rs
     plt.title('client'+ client+ 'RSSI')
     plt.ylabel('longitude')
     plt.xlabel('latitude')
+    fig.savefig('results\client'+ client+ 'Visualization' + '.pdf')
 
     check = random.sample(range(len(rss)), 10)
     print('check some of the test points')
@@ -63,10 +65,6 @@ def plot_visual(client, trainMse, trainNmse, testMse, testNmse, pos, pre_rss, rs
     print((abs(pre_rss-rss)>10).sum(),'difference >10')
     print((abs(pre_rss-rss)>20).sum(),'difference >20')
     print((abs(pre_rss-rss)>30).sum(),'difference >30')
-    print('relative diff')
-    print((abs(pre_rss-rss)/abs(rss)>10).sum(),'difference >0.1')
-    print((abs(pre_rss-rss)/abs(rss)>20).sum(),'difference >0.05')
-    print((abs(pre_rss-rss)/abs(rss)>30).sum(),'difference >0.01')
     print(max(pre_rss-rss),'max')
 
 #load

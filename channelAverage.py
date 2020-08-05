@@ -20,10 +20,9 @@ aaverage_G['W1'] = np.zeros([2,100])
 aaverage_G['b1'] = np.zeros(100)
 
 
-clients = []
 for num in range(numsClient):
     f=open("gradients\grads_bin"+str(num+1)+".bin","rb")
-    clients.append(f)
+    
     aaverage_G['W3'] += pickle.load(f)
     aaverage_G['b3'] += pickle.load(f)
     aaverage_G['gamma2'] += pickle.load(f)
@@ -45,7 +44,7 @@ for grad in aaverage_G:
   #print(grad)
   pickle.dump(aaverage_G[grad], f)
 f.close()
-print('Simulate the channel aggregation')
+#print('Simulate the channel aggregation')
 
 
 
