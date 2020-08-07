@@ -82,23 +82,9 @@ for client in range(numClients):
     csv_file = 'train'+str(client+1)+'.csv'
     trainSet = optim.myDataset(csv_file=csv_file)
     train_norm,_ = optim.mse_loss(np.zeros_like(trainSet.RSSI), trainSet.RSSI)
-    f=open("weights/weight_bin"+str(client+1)+".bin","rb")
-    load_w = {}
-    load_w['W1'] = pickle.load(f)
-    load_w['b1'] = pickle.load(f)
-    load_w['W2'] = pickle.load(f)
-    load_w['b2'] = pickle.load(f)
-    load_w['W3'] = pickle.load(f)
-    load_w['b3'] = pickle.load(f)
-    load_w['gamma1'] = pickle.load(f)
-    load_w['beta1'] = pickle.load(f)
-    load_w['gamma2'] = pickle.load(f)
-    load_w['beta2'] = pickle.load(f)
-    load_bn = [{'mode': 'train'} for i in range(num_layers - 1)]
-    for i in range(num_layers - 1):
-        load_bn[i]['running_mean'] = pickle.load(f)
-        load_bn[i]['running_var'] = pickle.load(f)
-    f.close()
+    load_w = optim.read_bin("weights/weight_bin"+str(client+1)+".bin")
+    
+    load_bn = optim.read_bn_bin('clients_bn/client'+str(client+1)+'.bin')
     print("client " + str(client+1)+" loads the local batch layer parameters")
     bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
     ##############################################################################
