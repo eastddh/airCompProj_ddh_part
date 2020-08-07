@@ -23,18 +23,18 @@ do
 	fi
 	if ((iter == 1)) 
 	then
-		python server.py 1 $iter $lr $decay
+		python3 server.py 1 $iter $lr $decay
 	else
-		python channelAverage.py 2
-		python server.py 0 $iter $lr $decay
+		python3 channelAverage.py 2
+		python3 server.py 0 $iter $lr $decay
 	fi
 	for ((clients = 1; clients <=2; clients++))
 	do
 		if ((iter == 1))
 		then
-			python client.py 1 $clients
+			python3 client.py 1 $clients
 		else
-			python client.py 0 $clients
+			python3 client.py 0 $clients
 		fi
 	done
 done 
