@@ -42,7 +42,7 @@ load_bn = None
 
 if ini == 1:
     if os.path.exists("history/clientTrainMSELoss"+client+".bin"):
-        os.remove("history\clientTrainMSELoss"+client+".bin")
+        os.remove("history/clientTrainMSELoss"+client+".bin")
         print("client " + client+" clears train loss history")
     if os.path.exists("history/clientTestMSELoss"+client+".bin"):
         os.remove("history/clientTestMSELoss"+client+".bin")
