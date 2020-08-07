@@ -6,13 +6,14 @@ echo -n "Enter the initialized learning rate"
 read lr
 echo -n "Enter the lr decay rate"
 read decay
-echo -n "Enter number of clients"
-read numClients
+#echo -n "Enter number of clients"
+#read numClients
 
 mkdir gradients
 mkdir history
 mkdir weights
 mkdir results
+mkdir clients_bn
 
 for ((iter =1;iter <=$iters;iter++))
 do

@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import pickle
+import copy
 """
 This file implements various first-order update rules that are commonly used
 for training neural networks. Each update rule accepts current weights and the
@@ -471,7 +473,11 @@ class FullyConnectedNet(object):
             for i in range(self.num_layers-1):
                 self.params['gamma'+str(i+1)] = load_weights['gamma'+str(i+1)]
                 self.params['beta' +str(i+1)] = load_weights['beta' +str(i+1)]
-            self.bn_params = load_bn
+
+            self.bn_params = []
+            for li in load_bn:
+                copy_li = copy.deepcopy(li)
+                self.bn_params.append(copy_li)
         for k, v in self.params.items():
             self.params[k] = v.astype(dtype)
         
@@ -844,3 +850,51 @@ class myDataset:
         RSSI = np.array(self.RSSI[idx])
         sample = {'positions':pos , 'RSSI': RSSI}
         return sample
+def read_bin(filename):
+    f=open(filename,"rb")
+    load_w = {}
+    while True:
+      try:
+        t1 = pickle.load(f)
+        t2 = pickle.load(f)
+        if type(t1) == str:
+            load_w[t1] = t2
+        else:
+            load_w[t2] = t1
+      except EOFError:
+        break
+    f.close()
+    return load_w
+def write_bin(filename, model_params):
+    f = open(filename,'wb')
+    for para in model_params:
+        pickle.dump(para, f)
+        pickle.dump(model_params[para], f)
+    f.close()
+
+def read_bn_bin(filename):
+    f=open(filename,"rb")
+    load_w = []
+    while True:
+      try:
+        t1 = pickle.load(f)
+        t2 = pickle.load(f)
+
+        t3 = pickle.load(f)
+        t4 = pickle.load(f)
+
+        t5 = pickle.load(f)
+        t6 = pickle.load(f)
+        load_w.append({t1:t2, t3:t4, t5:t6})
+
+      except EOFError:
+        break
+    f.close()
+    return load_w
+def write_bn_bin(filename, bn_params):
+    f = open(filename,'wb')
+    for bn in bn_params:
+        for para in bn:
+            pickle.dump(para, f)
+            pickle.dump(bn[para], f)
+    f.close()

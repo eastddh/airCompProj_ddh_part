@@ -36,49 +36,26 @@ bn_model = None
 
 
 # initial gradient
-f=open("weights\weight_bin.bin","rb")
-load_w = {}
-load_w['W1'] = pickle.load(f)
-load_w['b1'] = pickle.load(f)
-load_w['W2'] = pickle.load(f)
-load_w['b2'] = pickle.load(f)
-load_w['W3'] = pickle.load(f)
-load_w['b3'] = pickle.load(f)
-load_w['gamma1'] = pickle.load(f)
-load_w['beta1'] = pickle.load(f)
-load_w['gamma2'] = pickle.load(f)
-load_w['beta2'] = pickle.load(f)
+load_w = optim.read_bin("weights/weight_bin.bin")
 
 load_bn = None
-f.close()
+
 if ini == 1:
-    if os.path.exists("history\clientTrainMSELoss"+client+".bin"):
+    if os.path.exists("history/clientTrainMSELoss"+client+".bin"):
         os.remove("history\clientTrainMSELoss"+client+".bin")
         print("client " + client+" clears train loss history")
-    if os.path.exists("history\clientTestMSELoss"+client+".bin"):
-        os.remove("history\clientTestMSELoss"+client+".bin")
+    if os.path.exists("history/clientTestMSELoss"+client+".bin"):
+        os.remove("history/clientTestMSELoss"+client+".bin")
         print("client " + client+" clears test loss history")
+    if os.path.exists('clients_bn/client'+client+'.bin'):
+        os.remove('clients_bn/client'+client+'.bin')
+        print("client " + client+" clears batch info history")
     load_bn = [{'mode': 'train'} for i in range(num_layers - 1)]
     #for i in range(num_layers - 1):
     #    load_bn[i]['running_mean'] = pickle.load(f)
     #    load_bn[i]['running_var'] = pickle.load(f)
 else:
-    f=open("weights\weight_bin"+client+".bin","rb")
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    pickle.load(f)
-    load_bn = [{'mode': 'train'} for i in range(num_layers - 1)]
-    for i in range(num_layers - 1):
-        load_bn[i]['running_mean'] = pickle.load(f)
-        load_bn[i]['running_var'] = pickle.load(f)
-    f.close()
+    load_bn = optim.read_bn_bin('clients_bn/client'+client+'.bin')
     #print("client " + client+" loads the local batch layer parameters")
 bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
 #print("client " + client+" loads the global model")
@@ -90,28 +67,32 @@ X_batch = trainSet.pos[batch_mask]
 y_batch = trainSet.RSSI[batch_mask]
         
 trainLoss, grads = bn_model.loss(X_batch, y_batch)
-f = open('weights\weight_bin'+client+'.bin','wb')
-for para in bn_model.params:
-    pickle.dump(bn_model.params[para], f)
-for para in bn_model.bn_params:
-    pickle.dump(para['running_mean'],f)
-    pickle.dump(para['running_var'],f)
-f.close()
+
+optim.write_bin('weights/weight_bin'+client+'.bin', bn_model.params)
+##f = open('weights\weight_bin'+client+'.bin','wb')
+##for para in bn_model.params:
+##    pickle.dump(bn_model.params[para], f)
+optim.write_bn_bin('clients_bn/client'+client+'.bin', bn_model.bn_params)
+##for para in bn_model.bn_params:
+##    pickle.dump(para['running_mean'],f)
+##    pickle.dump(para['running_var'],f)
+##f.close()
 #print('client ' + client+' stores the model weight')
 
-f = open('gradients\grads_bin'+client+'.bin','wb')
-for grad in grads:
-    pickle.dump(grads[grad], f)
-f.close()
+#f = open('gradients\grads_bin'+client+'.bin','wb')
+#for grad in grads:
+#    pickle.dump(grads[grad], f)
+#f.close()
+optim.write_bin('gradients/grads_bin'+client+'.bin', grads)
 #print('client ' + client+' obtains and stores full gradient')
 
-f = open('history\clientTrainMSELoss'+client+'.bin','ab')
+f = open('history/clientTrainMSELoss'+client+'.bin','ab')
 pickle.dump(trainLoss, f)
 f.close()
 
 testScores = bn_model.loss(testSet.pos)
 testLoss, _ = optim.mse_loss(testScores, testSet.RSSI)
-f = open('history\clientTestMSELoss'+client+'.bin','ab')
+f = open('history/clientTestMSELoss'+client+'.bin','ab')
 pickle.dump(testLoss, f)
 f.close()
 

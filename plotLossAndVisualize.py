@@ -43,7 +43,7 @@ def plot_visual(client, trainMse, trainNmse, testMse, testNmse, pos, pre_rss, rs
     plt.plot(testNmse)
     plt.ylabel('NMSE')
     plt.xlabel('training epoch')
-    fig.savefig('results\client'+ client+ 'loss' + '.pdf')
+    fig.savefig('results/client'+ client+ 'loss' + '.pdf')
        
     
     fig = plt.figure(figsize = (10, 7))
@@ -56,7 +56,7 @@ def plot_visual(client, trainMse, trainNmse, testMse, testNmse, pos, pre_rss, rs
     plt.title('client'+ client+ 'RSSI')
     plt.ylabel('longitude')
     plt.xlabel('latitude')
-    fig.savefig('results\client'+ client+ 'Visualization' + '.pdf')
+    fig.savefig('results/client'+ client+ 'Visualization' + '.pdf')
 
     check = random.sample(range(len(rss)), 10)
     print('check some of the test points')
@@ -82,7 +82,7 @@ for client in range(numClients):
     csv_file = 'train'+str(client+1)+'.csv'
     trainSet = optim.myDataset(csv_file=csv_file)
     train_norm,_ = optim.mse_loss(np.zeros_like(trainSet.RSSI), trainSet.RSSI)
-    f=open("weights\weight_bin"+str(client+1)+".bin","rb")
+    f=open("weights/weight_bin"+str(client+1)+".bin","rb")
     load_w = {}
     load_w['W1'] = pickle.load(f)
     load_w['b1'] = pickle.load(f)
@@ -106,7 +106,7 @@ for client in range(numClients):
     ##############################################################################
     trainMSE = []
     trainNMSE = []
-    f = open('history\clientTrainMSELoss'+str(client+1)+'.bin','rb')
+    f = open('history/clientTrainMSELoss'+str(client+1)+'.bin','rb')
     while True:
         try:
             temp = pickle.load(f)
@@ -121,7 +121,7 @@ for client in range(numClients):
     ##############################################################################
     testMSE = []
     testNMSE = []
-    f = open('history\clientTestMSELoss'+str(client+1)+'.bin','rb')
+    f = open('history/clientTestMSELoss'+str(client+1)+'.bin','rb')
     while True:
         try:
             temp = pickle.load(f)
