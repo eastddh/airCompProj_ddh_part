@@ -124,5 +124,5 @@ for client in range(numClients):
     print("client " +str(client+1)+"finished predicting")
     plot_visual(str(client+1), trainMSE, trainNMSE, testMSE, testNMSE, testSet.pos, pred, testSet.RSSI) 
     print("client " +str(client+1)+" finished")
-plt.show(block=False)
+#plt.show(block=False)
 
