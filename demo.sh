@@ -14,6 +14,7 @@ mkdir history
 mkdir weights
 mkdir results
 mkdir clients_bn
+mkdir server_info
 
 for ((iter =1;iter <=$iters;iter++))
 do
@@ -23,18 +24,18 @@ do
 	fi
 	if ((iter == 1)) 
 	then
-		python3 server.py 1 $iter $lr $decay
+		python server.py 1 $iter $lr $decay
 	else
-		python3 channelAverage.py 2
-		python3 server.py 0 $iter $lr $decay
+		python channelAverage.py 2
+		python server.py 0 $iter $lr $decay
 	fi
 	for ((clients = 1; clients <=2; clients++))
 	do
 		if ((iter == 1))
 		then
-			python3 client.py 1 $clients
+			python client.py 1 $clients
 		else
-			python3 client.py 0 $clients
+			python client.py 0 $clients
 		fi
 	done
 done 

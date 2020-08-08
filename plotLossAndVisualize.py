@@ -93,30 +93,36 @@ for client in range(numClients):
     trainMSE = []
     trainNMSE = []
     f = open('history/clientTrainMSELoss'+str(client+1)+'.bin','rb')
+    g = open('history/clientTrainNMSELoss'+str(client+1)+'.bin','rb')
     while True:
         try:
             temp = pickle.load(f)
             trainMSE.append(temp)
-            trainNMSE.append(temp/train_norm)
+            temp = pickle.load(g)
+            trainNMSE.append(temp)
         except EOFError:
             print("client " +str(client+1)+"finished reading training loss")
             break
     f.close()
+    g.close()
     ##############################################################################
     ###                     Load test loss for each client                     ###
     ##############################################################################
     testMSE = []
     testNMSE = []
     f = open('history/clientTestMSELoss'+str(client+1)+'.bin','rb')
+    g = open('history/clientTestNMSELoss'+str(client+1)+'.bin','rb')
     while True:
         try:
             temp = pickle.load(f)
             testMSE.append(temp)
-            testNMSE.append(temp/test_norm)
+            temp = pickle.load(g)
+            testNMSE.append(temp)
         except EOFError:
             print("client " +str(client+1)+"finished reading test loss")
             break
     f.close()
+    g.close()
     ##############################################################################
     ###                     Plot and visualize for each client                 ###
     ##############################################################################

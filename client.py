@@ -43,10 +43,16 @@ load_bn = None
 if ini == 1:
     if os.path.exists("history/clientTrainMSELoss"+client+".bin"):
         os.remove("history/clientTrainMSELoss"+client+".bin")
-        print("client " + client+" clears train loss history")
+        print("client " + client+" clears train mse history")
+    if os.path.exists("history/clientTrainNMSELoss"+client+".bin"):
+        os.remove("history/clientTrainNMSELoss"+client+".bin")
+        print("client " + client+" clears train nmse history")
     if os.path.exists("history/clientTestMSELoss"+client+".bin"):
         os.remove("history/clientTestMSELoss"+client+".bin")
-        print("client " + client+" clears test loss history")
+        print("client " + client+" clears test mse history")
+    if os.path.exists("history/clientTestNMSELoss"+client+".bin"):
+        os.remove("history/clientTestNMSELoss"+client+".bin")
+        print("client " + client+" clears test nmse history")
     if os.path.exists('clients_bn/client'+client+'.bin'):
         os.remove('clients_bn/client'+client+'.bin')
         print("client " + client+" clears batch info history")
@@ -65,7 +71,8 @@ batch_size = int (num_train / 10)
 batch_mask = np.random.choice(num_train, batch_size)
 X_batch = trainSet.pos[batch_mask]
 y_batch = trainSet.RSSI[batch_mask]
-        
+
+train_norm,_ = optim.mse_loss(np.zeros_like(y_batch), y_batch)
 trainLoss, grads = bn_model.loss(X_batch, y_batch)
 
 optim.write_bin('weights/weight_bin'+client+'.bin', bn_model.params)
@@ -90,10 +97,17 @@ f = open('history/clientTrainMSELoss'+client+'.bin','ab')
 pickle.dump(trainLoss, f)
 f.close()
 
-testScores = bn_model.loss(testSet.pos)
-testLoss, _ = optim.mse_loss(testScores, testSet.RSSI)
+f = open('history/clientTrainNMSELoss'+client+'.bin','ab')
+pickle.dump(trainLoss/train_norm, f)
+f.close()
+
+
+testLoss, _ = bn_model.loss(testSet.pos, testSet.RSSI)
+test_norm,_ = optim.mse_loss(np.zeros_like(testSet.RSSI), (testSet.RSSI))
 f = open('history/clientTestMSELoss'+client+'.bin','ab')
 pickle.dump(testLoss, f)
 f.close()
-
+f = open('history/clientTestNMSELoss'+client+'.bin','ab')
+pickle.dump(testLoss/test_norm, f)
+f.close()
 #print('client ' + client+' records the train and test MSE loss')

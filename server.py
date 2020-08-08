@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import optim
 import pickle
 import sys
@@ -14,90 +13,81 @@ hidden_dims = [100, 100]
 num_layers = 3
 
 ini = int(sys.argv[1])
-epoch = int(sys.argv[2]) 
-lr = float(sys.argv[3])
-decay = float(sys.argv[4])
-lr = lr* (decay** (epoch-1))
+#ini = 1 then server initializes global model weight and broadcast to clients
+epoch = int(sys.argv[2]) #current epoch  
+lr = float(sys.argv[3]) #initial learning rate
+decay = float(sys.argv[4]) # learning rate decay 
+c_lr = lr* (decay** (epoch-1)) # current learning rate
 if epoch % 10 ==0:
-    print("Iteration ", epoch," with lr ", lr)
-# initial gradient
+    print("Iteration ", epoch," with lr ", c_lr)
+# initial model weight
 if ini == 1:
+    if os.path.exists("server_info/velocity.bin"):
+        os.remove("server_info/velocity.bin")
+        print("server initializes update config")
     bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale)
     print("Server initializes global model weight")
     # write down the initial random model weight
-    f = open('weights/weight_bin.bin','wb')
     optim.write_bin('weights/weight_bin.bin', bn_model.params)
+    
+    f = open("server_info/velocity.bin",'wb')
+    for para in bn_model.params:
+        pickle.dump(para, f)
+        pickle.dump(np.zeros_like(bn_model.params[para]), f)
+    f.close()
     print('Server stores the model weight')
 else:
     #########################################
     ###     Server reads model weights    ###
     #########################################
-    #f=open("weights\weight_bin.bin","rb")
-    load_w = optim.read_bin("weights/weight_bin.bin")
-##    load_w['W1'] = pickle.load(f)
-##    load_w['b1'] = pickle.load(f)
-##    load_w['W2'] = pickle.load(f)
-##    load_w['b2'] = pickle.load(f)
-##    load_w['W3'] = pickle.load(f)
-##    load_w['b3'] = pickle.load(f)
-##    load_w['gamma1'] = pickle.load(f)
-##    load_w['beta1'] = pickle.load(f)
-##    load_w['gamma2'] = pickle.load(f)
-##    load_w['beta2'] = pickle.load(f)
-        
-    load_bn = [{'mode': 'train'} for i in range(num_layers - 1)]
-    #for i in range(num_layers - 1):
-    #    load_bn[i]['running_mean'] = pickle.load(f)
-    #    load_bn[i]['running_var'] = pickle.load(f)
-    
-    bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
+    load_w = optim.read_bin("weights/weight_bin.bin") # read previous w
+    load_bn = [{'mode': 'train'} for i in range(num_layers - 1)] 
+    #bn_model = optim.FullyConnectedNet(hidden_dims, weight_scale=weight_scale, load_weights=load_w, load_bn=load_bn)
     #print("Server finished Loading model weights")
-
+    f = open("server_info/velocity.bin",'rb')
+    load_v = {}
+    while True:
+      try:
+        t1 = pickle.load(f)
+        t2 = pickle.load(f)
+        if type(t1) == str:
+            #print(t1)
+            load_v[t1] = t2
+        else:
+            #print(t2)
+            load_v[t2] = t1
+      except EOFError:
+        break
+    f.close()
     #########################################
     ###     Server reads aggregated       ###
     ###     gradients.                    ###
     #########################################
     load_grads = optim.read_bin("gradients/grads_bin.bin")
-##    f=open("gradients\grads_bin.bin","rb")
-##    load_grads = {}
-##    load_grads['W3'] = pickle.load(f)
-##    load_grads['b3'] = pickle.load(f)
-##    load_grads['gamma2'] = pickle.load(f)
-##    load_grads['beta2'] = pickle.load(f)
-##    load_grads['W2'] = pickle.load(f)
-##    load_grads['b2'] = pickle.load(f)
-##    load_grads['gamma1'] = pickle.load(f)
-##    load_grads['beta1'] = pickle.load(f)
-##    load_grads['W1'] = pickle.load(f)
-##    load_grads['b1'] = pickle.load(f)
-##    f.close()
-    optim_config={'learning_rate': lr,
+    optim_config={'learning_rate': c_lr,
                       'momentum': 0.9,
                     }
     optim_configs={}
-    for p in bn_model.params:
+    for p in load_w:
         d = {k: v for k, v in optim_config.items()}
+        d['velocity'] = load_v[p]
         optim_configs[p] = d
     #lr_decay=0.95
 
     # update
-    for p, w in bn_model.params.items():
+    f = open("server_info/velocity.bin",'wb')
+    for p, w in load_w.items():
         dw = load_grads[p]
         config = optim_configs[p]
         next_w, next_config = optim.sgd_momentum(w, dw, config)
-        bn_model.params[p] = next_w
+        load_w[p] = next_w
         optim_configs[p] = next_config
+        pickle.dump(p, f)
+        pickle.dump(next_config['velocity'], f)
+    f.close()
     #print("Server updates the model weights")
-    optim.write_bin('weights/weight_bin.bin', bn_model.params)
-    #f = open('weights\weight_bin.bin','wb')
-    #for para in bn_model.params:
-      #print(para)
-    #  pickle.dump(bn_model.params[para], f)
-    #for para in bn_model.bn_params:
-    #    pickle.dump(para['running_mean'],f)
-    #    pickle.dump(para['running_var'],f)
-    #f.close()
-    #print('Server stores the model weight')
+    optim.write_bin('weights/weight_bin.bin', load_w)
+    
 
 
 
